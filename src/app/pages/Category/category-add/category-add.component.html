@@ -1,0 +1,13 @@
+  <h1 id="addHeader" class="text-center">Add Category</h1>
+  <form [formGroup]="categoryForm" (submit)="onSubmitCategoryForm()">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex flex-row align-items-center">
+          <input type="text" class="form-control form-control-lg text-center mr-2" formControlName="name" placeholder="Add Category">
+          <div>
+            <button type="submit" class="btn btn-success">Add</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
