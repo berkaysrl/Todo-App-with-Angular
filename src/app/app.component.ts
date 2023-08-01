@@ -1,23 +1,17 @@
 import { Component } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+import { NavbarComponent } from './Modules/Navbar/navbar.component';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+  styleUrls: ['./app.component.scss'],
+  standalone:true,
+  imports:[
+    RouterModule,
+    NavbarComponent
+  ]
 })
 export class AppComponent {
   title = 'TodoApp';
-  form = new FormGroup({
-    'name': new FormControl(null, Validators.required),
-    'email': new FormControl(null, [Validators.required, Validators.email])
-  });
-  categoryForm=new FormGroup({
-    'name':new FormControl(null),
-  });
-  constructor() {
-  }
-  onSubmit() {
-   
-  }
 }

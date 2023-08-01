@@ -1,0 +1,107 @@
+//Font's definition
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
+*{
+    font-family: 'Open Sans', sans-serif;
+}
+//Font's definition end
+//Colors
+$primaryColor:#445aee;
+$headerColor:#445cec;
+$textColor:#333841;
+$dangerColor:#e74c3c;
+$successColor:#2ecc71;
+//Colors end
+
+//Buttons 
+@mixin btn-primary {
+    background-color: $primaryColor;
+    border: 1px solid $primaryColor;
+    border-radius: 30px;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 10px 20px;
+    margin:0 10px 0 10px;
+    text-align: center;
+    text-decoration: none;
+    transition: background-color 0.3s, transform 0.3s; // Düzgün bir geçiş için
+
+    &:hover,
+    &:focus {
+        background-color: white;
+        color:$primaryColor;
+        transform: scale(1.10); // Butonun biraz büyümesi için
+    }
+
+    &:active {
+        background-color: darken($primaryColor, 5%); // Aktif durumda biraz daha koyu bir renk için
+        transform: scale(1); // Büyümenin sıfırlanması
+    }
+
+    &:disabled {
+        cursor: not-allowed;
+        opacity: 0.7;
+    }
+}
+@mixin btn-danger{
+    background-color: $dangerColor;
+    border: 1px solid $dangerColor;
+    border-radius: 30px;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 10px 20px;
+    margin:0 10px 0 10px;
+    text-align: center;
+    text-decoration: none;
+    transition: background-color 0.3s, transform 0.3s; // Düzgün bir geçiş için
+
+    &:hover,
+    &:focus {
+        background-color: white;
+        color:$dangerColor;
+        transform: scale(1.10); // Butonun biraz büyümesi için
+    }
+
+    &:active {
+        background-color: darken($dangerColor, 5%); // Aktif durumda biraz daha koyu bir renk için
+        transform: scale(1); // Büyümenin sıfırlanması
+    }
+
+    &:disabled {
+        cursor: not-allowed;
+        opacity: 0.7;
+    }
+}
+@mixin btn-success{
+    background-color: $successColor;
+    border: 1px solid $successColor;
+    border-radius: 30px;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 10px 20px;
+    margin:0 10px 0 10px;
+    text-align: center;
+    text-decoration: none;
+    transition: background-color 0.3s, transform 0.3s; // Düzgün bir geçiş için
+
+    &:hover,
+    &:focus {
+        background-color: white;
+        color:$successColor;
+        transform: scale(1.10); // Butonun biraz büyümesi için
+    }
+
+    &:active {
+        background-color: darken($successColor, 5%); // Aktif durumda biraz daha koyu bir renk için
+        transform: scale(1); // Büyümenin sıfırlanması
+    }
+
+    &:disabled {
+        cursor: not-allowed;
+        opacity: 0.7;
+    }
+}
+//Buttons end
+

@@ -1,0 +1,17 @@
+@import '../../../../../styles.scss';
+.btn-danger {
+    @include btn-danger;
+}
+.btn-success{
+    @include btn-success;
+}
+.table
+{
+    td,th{
+        text-align: center;
+    }
+    .operationsColumn
+    {
+        width:35%;
+    }
+}

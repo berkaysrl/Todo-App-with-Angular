@@ -1,0 +1,37 @@
+@import '../../../styles.scss';
+$navbarTextColor:#162449;
+h3 {
+    color: $navbarTextColor;
+}
+
+ul li {
+    &:not(:last-child) {
+        margin-right: 50px;
+    }
+
+    a {
+        color: $navbarTextColor;
+        text-decoration: none;
+        font-size: 1.3em; // Ya da istediğiniz bir değeri kullanabilirsiniz.
+
+        &:hover {
+            border-bottom: 2px solid $navbarTextColor; // Alt çizgi için
+        }
+
+        &.active {
+            border-bottom: 2px solid $navbarTextColor; // Alt çizgi için
+        }
+    }
+}
+
+.navbar {
+    padding: 0 !important;
+    
+    .navbar-brand {
+        padding: 0 !important;
+
+        img {
+            vertical-align: middle;
+        }
+    }
+}

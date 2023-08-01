@@ -1,0 +1,38 @@
+<div class="container p-0">
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <!-- Dynamically generating headers from categoryTableHeaders array -->
+              <th scope="col" *ngFor="let header of categoryTableHeaders">{{header}}</th>
+            </tr>
+          </thead>
+          <tbody>
+             <!-- Dynamically generating rows for each category. Using async pipe to subscribe to the categories$ observable -->
+            <tr *ngFor="let category of categories$ | async">
+               <!-- Displaying category name. If the category is being edited, show input field, otherwise show the name -->
+              <td class="nameColumn">
+                 <!-- Display input field if in editing mode -->
+                <div *ngIf="editingId !== category.id">
+                  {{ category.name }}
+                </div>
+                <!-- Display input field if in editing mode -->
+                <div *ngIf="editingId === category.id">
+                  <input class="form-control text-center" type="text" [formControl]="editCategoryControl">
+                </div>
+              </td>
+              <td class="operationsColumn">
+                <!-- If the category is not in editing mode, display Delete and Edit buttons -->
+                <ng-container  *ngIf="editingId !== category.id">
+                  <button id="operation-button" class=" btn rounded-btn btn-danger mr-5" (click)="onDelete(category.id)">Delete</button>
+                  <button id="operation-button" class=" btn btn-success" (click)="onEdit(category.id, category.name)">Edit</button>
+                </ng-container>
+                <!-- If the category is in editing mode, display Save and Cancel buttons -->
+                <ng-container *ngIf="editingId === category.id">
+                  <button id="operation-button" class=" btn btn-success mr-5" (click)="onSave(category)">Save</button>
+                  <button id="operation-button" class=" btn btn-danger" (click)="onCancel()">Cancel</button>
+                </ng-container>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+</div>

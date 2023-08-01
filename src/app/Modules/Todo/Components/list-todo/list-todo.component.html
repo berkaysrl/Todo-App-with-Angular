@@ -1,0 +1,54 @@
+<hr>
+<!-- Todo Filter Component -->
+<app-filter-todo
+                 (onSearchChange)="searchControl.setValue($event)" 
+                 (onCategoryChange)="categoryControl.setValue($event)">
+</app-filter-todo>
+<div class="container p-0">
+       <!-- Todo Table -->
+     <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th scope="col" *ngFor="let title of todoTitles">
+                {{title}}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Loop through each todo and display in a row -->
+          <tr *ngFor="let todo of filteredTodos$ | async">
+            <td class="titleColumn">
+            <!-- Display title or input box based on editing mode -->
+              <div *ngIf="editingId !== todo.id">
+                {{ todo.title }}
+              </div>
+              <div *ngIf="editingId === todo.id">
+                <input class="form-control form-control-lg text-center" type="text" [formControl]="editTitleControl">
+              </div>
+            </td>
+            <td class="categoryColumn">
+              <!-- Display category name or dropdown based on editing mode -->
+              <div *ngIf="editingId !== todo.id">
+                {{ todo.categoryId | categoryName }}
+              </div>
+              <div *ngIf="editingId === todo.id">
+                <select name="todoCategory" id="todoCategory" class="form-select form-select-lg text-center mr-2" [formControl]="editCategoryIdControl" placeholder="Select Category of Todo" value="{{todo.categoryId}}">
+                  <option  value="{{item.id}}" *ngFor="let item of categories$|async">{{item.name}}</option>
+                </select>
+              </div>
+            </td>
+            <!-- Operations Column for edit, save, and delete buttons -->
+            <td class="operationsColumn">
+              <ng-container  *ngIf="editingId !== todo.id">
+                <button id="operation-button" class=" btn rounded-btn btn-danger mr-5" (click)="onDelete(todo.id)">Delete</button>
+                <button id="operation-button" class=" btn btn-success" (click)="onEdit(todo.id, {id:0,title:todo.title,categoryId:todo.categoryId})">Edit</button>
+              </ng-container>
+              <ng-container *ngIf="editingId === todo.id">
+                <button id="operation-button" class=" btn btn-success mr-5" (click)="onSave(todo)">Save</button>
+                <button id="operation-button" class=" btn btn-danger" (click)="onCancel()">Cancel</button>
+              </ng-container>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+</div>

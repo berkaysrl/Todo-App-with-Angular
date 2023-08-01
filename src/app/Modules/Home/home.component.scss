@@ -1,0 +1,20 @@
+@import '../../../styles.scss';
+body, html {
+    height: 100%;
+    margin: 0;
+  }
+.information
+{
+    color:$primaryColor;
+}
+.btn-primary {
+    @include btn-primary;
+    width:40% !important;
+}
+.homeContainer
+{
+    display: flex;
+    justify-content: center; /* Yatayda ortalar */
+    align-items: center;     /* Dikeyde ortalar */
+    height: 100%;   
+}
