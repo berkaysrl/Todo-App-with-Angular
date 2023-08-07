@@ -5,6 +5,17 @@
 .btn-success{
     @include btn-success;
 }
+.btn-primary {
+    @include btn-primary;
+}
+.btn-warning {
+    @include btn-warning;
+}
+#addCategoryHeader
+{
+    color:$headerColor;
+}
+
 .table
 {
     td,th{

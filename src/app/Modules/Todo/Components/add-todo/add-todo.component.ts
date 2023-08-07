@@ -47,12 +47,6 @@ export class AddTodoComponent implements OnInit{
       title:this.todoForm.value['title'] ? this.todoForm.value['title'] : ''
       });
       this.todoForm.reset();
-      alert("Adding todo is successful.");
-
-    }
-    else
-    {
-      alert("Adding todo is failed.");
     }
   }
 }

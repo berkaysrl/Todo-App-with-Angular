@@ -1,7 +1,7 @@
 import { AsyncPipe, CommonModule, NgFor, NgIf } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { Observable, Subject, takeUntil } from 'rxjs';
+import { ChangeDetectionStrategy, Component,  OnInit } from '@angular/core';
+import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {  take } from 'rxjs';
 import { Category } from 'src/app/Interfaces/ICategory.interface';
 import { CategoryService } from 'src/app/Services/categoryService/category.service';
 
@@ -15,45 +15,86 @@ import { CategoryService } from 'src/app/Services/categoryService/category.servi
     NgFor,
     NgIf,
     AsyncPipe
-  ]
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ListCategoriesComponent implements OnDestroy,OnInit {
-    private ngUnsubscribe = new Subject<void>();
-    // Observable stream to hold list of categories
-    categories$ !: Observable<Category[]>;
-    // Headers for the category table
-    categoryTableHeaders: string[] = ["Name", "Operations"];
-     // Holds the ID of the category currently being edited, null if no category is being edited
-    editingId: number | null = null;
-     // FormControl to manage the editing of category name
-    editCategoryControl = new FormControl('');
-    constructor(public categoryService: CategoryService) { }
-    ngOnInit(): void {
-      // Load the categories when component initializes
-      this.categories$ = this.categoryService.getCategories().pipe(takeUntil(this.ngUnsubscribe));
-    }
-    ngOnDestroy(): void {
-      this.ngUnsubscribe.next();
-      this.ngUnsubscribe.complete();
-    }
-   // Set the editingId to the id of the category being edited and set the value of editCategoryControl to its name
-    onEdit(id: number, name: string) {
-      this.editingId = id;
-      this.editCategoryControl.setValue(name);
-    }
-    // Save the updated name of the category and reset editingId to null
-    onSave(category: Category) {
-      category.name = this.editCategoryControl.value ?this.editCategoryControl.value : '' ;
-      this.categoryService.updateCategory(category); 
-      this.editingId = null;
-    }
-    // Cancel the editing mode by setting editingId to null
-    onCancel() {
-      this.editingId = null;
-    }
-    // Delete a category by its ID
-    onDelete(id: number) {
-      this.categoryService.deleteCategory(id);
-    }
+export class ListCategoriesComponent implements OnInit {
+    // To check if editing mode is on or off
+  isEditing:boolean = false;  
+  categoriesForm: FormGroup;
+  categoryTitles: string[] = ["Name", "Operations"];
+  // We keep a form to return the value in cancel and reset state.
+  initialFormData: any;
+  //We can see if there is a change from the comparison between this initial form and the real form and we keep as boolean variable it in this variable.
+  hasChanges: boolean = false;
+  addCategoryGroup=new FormGroup({
+    'id':new FormControl(0),
+    'name':new FormControl('',[Validators.required])
+  });
+  // Getter for 'categories' form array
+  get categories(): FormArray {
+    return this.categoriesForm.get('categories') as FormArray;
+  }
+  constructor(
+    public categoryService: CategoryService,
+    private fb: FormBuilder
+  ) { 
+    this.categoriesForm = this.fb.group({
+      categories: this.fb.array([])
+    });
+  }
+  ngOnInit(): void {
+    this.categoryService.getCategories().pipe(take(1)).subscribe(categories => {
+      categories.forEach(category => this.categories.push(this.createCategoryGroup(category)));
+    });
+    this.categoriesForm.valueChanges.subscribe(() => {
+      this.hasChanges = JSON.stringify(this.initialFormData) !== JSON.stringify(this.categoriesForm.value);
+    });
+  }
 
+  // Function to create a FormGroup for a Category
+  createCategoryGroup(category?: Category): FormGroup {
+    return this.fb.group({
+      id: [category?.id || null],
+      name: [category?.name || '']
+    });
+}
+  addCategoryRow() {
+    if(!this.addCategoryGroup.invalid) {
+        const categoryToAdd: Category = {
+            id: this.addCategoryGroup.get('id')?.value || 0,
+            name: this.addCategoryGroup.get('name')?.value || ''
+        };
+        
+        const addedCategory = this.categoryService.addCategory(categoryToAdd);
+        this.categories.push(this.createCategoryGroup(addedCategory));
+        
+        this.addCategoryGroup.reset();
+    }
+} 
+  onSaveAll() {
+    const updatedCategories: Category[] = this.categoriesForm.value.categories;
+    this.categoryService.updateAllCategories(updatedCategories); 
+    this.isEditing=!this.isEditing;
+  }
+  // Function to delete a todo
+  onDelete(index: number,id:number) {
+    this.categories.removeAt(index);
+    this.categoryService.deleteCategory(id);
+  }
+   // Function to reset form changes
+  resetChanges() {
+      this.categoriesForm.reset(this.initialFormData);
+  }
+
+  // Function to update the form
+  onUpdate() {
+        this.isEditing = true;  
+        this.initialFormData=this.categoriesForm.value;
+  }
+
+  onCancelChanges() {
+        this.isEditing = false;  
+        this.categoriesForm.reset(this.initialFormData);
+  }
 }

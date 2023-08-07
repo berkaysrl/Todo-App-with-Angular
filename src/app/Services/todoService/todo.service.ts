@@ -48,16 +48,8 @@ export class TodoService {
     // Update the local storage with the new list.
     this.storageService.set('todos', updatedTodos);
   }
-  //Updates the details of an existing todo.
-  updateTodo(updatedTodo: Todo): void {
-    updatedTodo.categoryId=updatedTodo.categoryId*1;
-    const currentTodos = this.todoSubject.value;
-    const index = currentTodos.findIndex(todo => todo.id === updatedTodo.id);
-    if (index !== -1) {
-      currentTodos[index] = updatedTodo;
-      this.todoSubject.next(currentTodos);
-      // Update the local storage with the modified  w list.
-      this.storageService.set('todos', currentTodos);
-    } 
+  updateAllTodos(updatedTodos: Todo[]): void {
+    this.todoSubject.next([...updatedTodos]);
+    this.storageService.set('todos', updatedTodos);
   }
 }

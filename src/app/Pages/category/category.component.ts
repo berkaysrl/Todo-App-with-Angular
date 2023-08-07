@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import { AddCategoryComponent } from '../../Components/add-category/add-category.component';
-import { ListCategoriesComponent } from '../../Components/list-categories/list-categories.component';
+import { AddCategoryComponent } from '../../Modules/Category/Components/add-category/add-category.component';
+import { ListCategoriesComponent } from '../../Modules/Category/Components/list-categories/list-categories.component';
 import { TitleBlockComponent } from 'src/app/Modules/Shared/title-block/title-block.component';
 
 

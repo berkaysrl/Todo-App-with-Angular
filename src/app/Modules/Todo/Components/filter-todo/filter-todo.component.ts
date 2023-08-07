@@ -1,7 +1,7 @@
 import { AsyncPipe, NgFor } from '@angular/common';
 import { Component, EventEmitter, OnDestroy, OnInit,Output } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { Observable, Subject, takeUntil } from 'rxjs';
+import { Observable, Subject, debounceTime, takeUntil } from 'rxjs';
 import { Category } from 'src/app/Interfaces/ICategory.interface';
 import { CategoryService } from 'src/app/Services/categoryService/category.service';
 
@@ -29,11 +29,11 @@ export class FilterTodoComponent implements OnInit,OnDestroy{
     // Fetch the list of categories on initialization
     this.categories$ = this.categoryService.getCategories().pipe(takeUntil(this.ngUnsubscribe));
     // Subscribe to search input changes and emit the changes
-    this.searchControl.valueChanges.subscribe(value => {
+    this.searchControl.valueChanges.pipe(debounceTime(500)).subscribe(value => {
       this.onSearchChange.emit(value);
     });
     // Subscribe to category dropdown changes and emit the changes
-    this.categoryControl.valueChanges.subscribe(value => {
+    this.categoryControl.valueChanges.pipe(debounceTime(500)).subscribe(value => {
       this.onCategoryChange.emit(value);
     });
   }

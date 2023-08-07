@@ -24,9 +24,6 @@ export class AddCategoryComponent {
     // Call the addCategory method from CategoryService
     this.categoryService.addCategory({id:1,name:this.addCategoryForm.value['name'] ? this.addCategoryForm.value['name'] : ''});
     this.addCategoryForm.reset();
-    alert("Adding category is successful.");
     }
-    else
-    { alert("Adding category is failed.");}
   }
 }

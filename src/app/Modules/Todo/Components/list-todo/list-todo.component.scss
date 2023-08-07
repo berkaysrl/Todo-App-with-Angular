@@ -5,6 +5,9 @@
 .btn-success{
     @include btn-success;
 }
+.btn-warning {
+    @include btn-warning;
+}
 .table
 {
     td,th{

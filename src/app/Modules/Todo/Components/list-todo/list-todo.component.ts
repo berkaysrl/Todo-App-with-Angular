@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Observable, Subject, combineLatest, debounceTime, distinctUntilChanged, map, startWith, takeUntil } from 'rxjs';
+import { Component } from '@angular/core';
+import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Observable, combineLatest, distinctUntilChanged, map, startWith } from 'rxjs';
 import { Category } from 'src/app/Interfaces/ICategory.interface';
 import { Todo } from 'src/app/Interfaces/ITodo.interface';
 import { CategoryService } from 'src/app/Services/categoryService/category.service';
@@ -23,44 +23,46 @@ import { CategoryNamePipe } from 'src/app/Pipes/category-name.pipe';
   ],
   styleUrls: ['./list-todo.component.scss']
 })
-export class ListTodoComponent implements OnDestroy {
-  // Constructor with service injections
-   constructor(public categoryService:CategoryService,private todoService:TodoService ) {
-    // Initialize form controls
-    this.editTitleControl = this.editTodoForm.get('title') as FormControl;
-    this.editCategoryIdControl = this.editTodoForm.get('categoryId') as FormControl;  
-  }
+export class ListTodoComponent {
   // Observables to manage Todos and Categories data streams
   todos$ !:Observable<Todo[]>;
   categories$ !:Observable<Category[]>;
   filteredTodos$ !: Observable<Todo[]>;
-  private ngUnsubscribe = new Subject<void>();
   // FormControls for search and category filter functionalities
   searchControl = new FormControl();
   categoryControl = new FormControl();
   // Array to define column titles in the Todo table
   todoTitles=["Todo","Category","Operations"];
+  // FormGroup definitions
+  todosForm !: FormGroup;
+  // To check if editing mode is on or off
+  isEditing: boolean = false;
+  // We keep a form to return the value in cancel and reset state.
+  initialFormData: any;
+  //We can see if there is a change from the comparison between this initial form and the real form and we keep as boolean variable it in this variable.
+  hasChanges: boolean = false;
+  // Getter for 'todos' form array
+  get todos(): FormArray {
+    return this.todosForm.get('todos') as FormArray;
+  }
+   constructor(public categoryService:CategoryService,private todoService:TodoService ) {
+  }
   ngOnInit(): void {
-    // Fetching data from services
-    this.todos$=this.todoService.getTodos();
-    this.categories$=this.categoryService.getCategories();
+       // Fetching data from services
+    this.todos$ = this.todoService.getTodos();
+    this.categories$ = this.categoryService.getCategories();
     // Logic to filter Todos based on search and category selection
-    // Baska bir degiskene ata, takeuntil hepsine koymana gerek yok
     this.filteredTodos$ = combineLatest([
       this.todos$.pipe(),
       this.searchControl.valueChanges.pipe(
         startWith(''),
         distinctUntilChanged(),
-        debounceTime(500),
       ),
       this.categoryControl.valueChanges.pipe(startWith(''))
-    ]).pipe(map(([todos, searchTerm, category]) => 
-    {
-        console.log(todos);
-        console.log(searchTerm);
-        console.log(category);
+    ]).pipe(
+      map(([todos, searchTerm, category]) => {
         let filtered = todos;
-        if (searchTerm && searchTerm.length>0) {
+        if (searchTerm && searchTerm.length > 0) {
           filtered = filtered.filter(todo => todo.title.includes(searchTerm));
         }
         if (category) {
@@ -69,48 +71,51 @@ export class ListTodoComponent implements OnDestroy {
         return filtered;
       })
     );
-  }
-  ngOnDestroy(): void {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
-  }
-  // Form control definitions
-  editTitleControl: FormControl;
-  editCategoryIdControl: FormControl;
-  // FormGroup definitions
-  todoForm=new FormGroup({
-    'title':new FormControl(null,[Validators.required,Validators.minLength(2)]),
-    'categoryId':new FormControl(0,[Validators.required,Validators.min(1)])
-  });
-  editTodoForm =  new FormGroup({
-    'title': new FormControl(''),
-    'categoryId': new FormControl(0)
-  });
-  // Property to manage editing state
-  editingId: number | null = null;
-  // Method to handle edit operation
-  onEdit(id: number, todo: Todo) {
-    this.editingId = id;
-    this.editTodoForm.setValue({
-      'title': todo.title,
-      'categoryId': todo.categoryId
+    this.todosForm = new FormGroup({
+      todos: new FormArray([])
+    });
+    this.filteredTodos$.subscribe(todos => {
+      this.todos.clear();
+      todos.forEach(todo => this.todos.push(this.createTodoGroup(todo)));
+    });
+    this.todosForm.valueChanges.subscribe(() => {
+      this.hasChanges = JSON.stringify(this.initialFormData) !== JSON.stringify(this.todosForm.value);
     });
   }
-  //Service'de yapılabilir
-  // Method to handle save operation after edit
-  onSave(todo: Todo) {
-    todo.title = this.editTodoForm.value.title ? this.editTodoForm.value.title : '';
-    todo.categoryId = this.editTodoForm.value.categoryId ? this.editTodoForm.value.categoryId : 0;
-    this.todoService.updateTodo(todo); 
-    this.editingId = null;
+  // Function to create a FormGroup for a Todo
+  createTodoGroup(todo?: Todo): FormGroup {
+    return new FormGroup({
+      id: new FormControl(todo?.id || null),
+      title: new FormControl(todo?.title || '', Validators.required),
+      categoryId: new FormControl(todo?.categoryId || 0, Validators.required)
+    });
   }
-  // Method to cancel edit operation
-  onCancel() {
-    this.editingId = null;
-  }
-  // Method to handle delete operation
-  onDelete(id: number) {
-    this.todoService.deleteTodo(id);
-  }  
 
+
+  // Function to cancel edit operation
+  onCancelChanges() {
+    this.isEditing = false;  
+    this.todosForm.reset(this.initialFormData);
+  }
+  onSaveAll() {
+    const updatedTodos: Todo[] = this.todosForm.value.todos;
+    this.todoService.updateAllTodos(updatedTodos);
+    this.isEditing = false;
+  }
+  // Function to reset form changes
+  resetChanges() {
+    this.todosForm.reset(this.initialFormData);
+  }
+  // Function to delete a todo
+  onDelete(index: number,id:number) {
+    this.todos.removeAt(index);
+    this.todoService.deleteTodo(id);
+  }
+  // Function to update the form
+  onUpdate() {
+    this.isEditing = true;  
+    this.initialFormData = this.todosForm.value;
+  }
 }
+
+

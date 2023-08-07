@@ -1,38 +1,39 @@
+<form [formGroup]="addCategoryGroup" class="mb-5" (submit)="addCategoryRow()">
+  <div class="card-body ">
+    <div class="d-flex flex-row justify-content-center align-items-center">
+      <!-- Category Name Input -->
+      <input type="text" class="form-control form-control-lg text-center mr-2" formControlName="name" placeholder="Add Category">
+      <div>
+        <!-- Add Category Button - Disabled if Form is Invalid -->
+        <button type="submit" class="btn-primary" [disabled]="addCategoryGroup.invalid">Add</button>
+      </div>
+    </div>
+  </div>
+</form>
 <div class="container p-0">
-        <table class="table table-bordered">
-          <thead>
-            <tr>
-              <!-- Dynamically generating headers from categoryTableHeaders array -->
-              <th scope="col" *ngFor="let header of categoryTableHeaders">{{header}}</th>
-            </tr>
-          </thead>
-          <tbody>
-             <!-- Dynamically generating rows for each category. Using async pipe to subscribe to the categories$ observable -->
-            <tr *ngFor="let category of categories$ | async">
-               <!-- Displaying category name. If the category is being edited, show input field, otherwise show the name -->
-              <td class="nameColumn">
-                 <!-- Display input field if in editing mode -->
-                <div *ngIf="editingId !== category.id">
-                  {{ category.name }}
-                </div>
-                <!-- Display input field if in editing mode -->
-                <div *ngIf="editingId === category.id">
-                  <input class="form-control text-center" type="text" [formControl]="editCategoryControl">
-                </div>
-              </td>
-              <td class="operationsColumn">
-                <!-- If the category is not in editing mode, display Delete and Edit buttons -->
-                <ng-container  *ngIf="editingId !== category.id">
-                  <button id="operation-button" class=" btn rounded-btn btn-danger mr-5" (click)="onDelete(category.id)">Delete</button>
-                  <button id="operation-button" class=" btn btn-success" (click)="onEdit(category.id, category.name)">Edit</button>
-                </ng-container>
-                <!-- If the category is in editing mode, display Save and Cancel buttons -->
-                <ng-container *ngIf="editingId === category.id">
-                  <button id="operation-button" class=" btn btn-success mr-5" (click)="onSave(category)">Save</button>
-                  <button id="operation-button" class=" btn btn-danger" (click)="onCancel()">Cancel</button>
-                </ng-container>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+  <form [formGroup]="categoriesForm">
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th scope="col" *ngFor="let header of categoryTitles">{{header}}</th>
+        </tr>
+      </thead>
+    <tbody formArrayName="categories">
+      <tr *ngFor="let categoryCtrl of categories.controls; let i = index" [formGroupName]="i">
+        <td>
+          <input type="text" class="form-control text-center"  [readOnly]="!isEditing" formControlName="name">
+        </td>
+          <td class="operationsColumn">
+            <button class="btn btn-danger" (click)="onDelete(i,categoryCtrl.value['id'])">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <button class="btn btn-success mb-2" *ngIf="!isEditing" (click)="onUpdate()">Update</button>
+    <div *ngIf="isEditing" class="mb-2">
+    <button class="btn btn-success"  [disabled]="!hasChanges " (click)="onSaveAll()">Save All</button>
+    <button class="btn btn-danger" (click)="onCancelChanges()">Cancel</button>
+    <button class="btn btn-warning"   (click)="resetChanges()">Reset Changes</button>
+    </div>
+  </form>
 </div>
