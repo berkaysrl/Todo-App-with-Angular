@@ -21,7 +21,7 @@
     <tbody formArrayName="categories">
       <tr *ngFor="let categoryCtrl of categories.controls; let i = index" [formGroupName]="i">
         <td>
-          <input type="text" class="form-control text-center"  [readOnly]="!isEditing" formControlName="name">
+          <input type="text" class="form-control text-center"  formControlName="name">
         </td>
           <td class="operationsColumn">
             <button class="btn btn-danger" (click)="onDelete(i,categoryCtrl.value['id'])">Delete</button>
@@ -29,11 +29,9 @@
         </tr>
       </tbody>
     </table>
-    <button class="btn btn-success mb-2" *ngIf="!isEditing" (click)="onUpdate()">Update</button>
-    <div *ngIf="isEditing" class="mb-2">
-    <button class="btn btn-success"  [disabled]="!hasChanges " (click)="onSaveAll()">Save All</button>
-    <button class="btn btn-danger" (click)="onCancelChanges()">Cancel</button>
-    <button class="btn btn-warning"   (click)="resetChanges()">Reset Changes</button>
-    </div>
+    <div class="mb-2">
+      <button class="btn btn-success"  [disabled]="!hasChanges " (click)="onSaveAll()">Save All</button>
+      <button class="btn btn-warning"   (click)="resetChanges()">Reset Changes</button>
+  </div>
   </form>
 </div>

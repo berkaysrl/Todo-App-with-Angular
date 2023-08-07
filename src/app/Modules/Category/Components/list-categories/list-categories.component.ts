@@ -20,7 +20,6 @@ import { CategoryService } from 'src/app/Services/categoryService/category.servi
 })
 export class ListCategoriesComponent implements OnInit {
     // To check if editing mode is on or off
-  isEditing:boolean = false;  
   categoriesForm: FormGroup;
   categoryTitles: string[] = ["Name", "Operations"];
   // We keep a form to return the value in cancel and reset state.
@@ -50,6 +49,7 @@ export class ListCategoriesComponent implements OnInit {
     this.categoriesForm.valueChanges.subscribe(() => {
       this.hasChanges = JSON.stringify(this.initialFormData) !== JSON.stringify(this.categoriesForm.value);
     });
+    this.initialFormData=this.categoriesForm.value;
   }
 
   // Function to create a FormGroup for a Category
@@ -65,17 +65,17 @@ export class ListCategoriesComponent implements OnInit {
             id: this.addCategoryGroup.get('id')?.value || 0,
             name: this.addCategoryGroup.get('name')?.value || ''
         };
-        
         const addedCategory = this.categoryService.addCategory(categoryToAdd);
         this.categories.push(this.createCategoryGroup(addedCategory));
-        
         this.addCategoryGroup.reset();
+        this.initialFormData=this.categoriesForm.value;
+        this.hasChanges=false;
     }
 } 
   onSaveAll() {
     const updatedCategories: Category[] = this.categoriesForm.value.categories;
-    this.categoryService.updateAllCategories(updatedCategories); 
-    this.isEditing=!this.isEditing;
+    this.categoryService.updateAllCategories(updatedCategories);
+    this.initialFormData=this.categoriesForm.value;
   }
   // Function to delete a todo
   onDelete(index: number,id:number) {
@@ -86,15 +86,7 @@ export class ListCategoriesComponent implements OnInit {
   resetChanges() {
       this.categoriesForm.reset(this.initialFormData);
   }
-
-  // Function to update the form
-  onUpdate() {
-        this.isEditing = true;  
-        this.initialFormData=this.categoriesForm.value;
-  }
-
   onCancelChanges() {
-        this.isEditing = false;  
         this.categoriesForm.reset(this.initialFormData);
   }
 }

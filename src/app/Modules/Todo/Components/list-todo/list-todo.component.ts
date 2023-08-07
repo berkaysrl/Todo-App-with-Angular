@@ -35,13 +35,16 @@ export class ListTodoComponent {
   todoTitles=["Todo","Category","Operations"];
   // FormGroup definitions
   todosForm !: FormGroup;
-  // To check if editing mode is on or off
-  isEditing: boolean = false;
   // We keep a form to return the value in cancel and reset state.
   initialFormData: any;
   //We can see if there is a change from the comparison between this initial form and the real form and we keep as boolean variable it in this variable.
   hasChanges: boolean = false;
   // Getter for 'todos' form array
+  addTodoGroup=new FormGroup({
+    'id':new FormControl(0),
+    'title':new FormControl('',[Validators.required]),
+    'categoryId':new FormControl(0,[Validators.required,Validators.min(1)])
+  });
   get todos(): FormArray {
     return this.todosForm.get('todos') as FormArray;
   }
@@ -77,10 +80,12 @@ export class ListTodoComponent {
     this.filteredTodos$.subscribe(todos => {
       this.todos.clear();
       todos.forEach(todo => this.todos.push(this.createTodoGroup(todo)));
+      this.initialFormData=this.todosForm.value;
     });
     this.todosForm.valueChanges.subscribe(() => {
       this.hasChanges = JSON.stringify(this.initialFormData) !== JSON.stringify(this.todosForm.value);
     });
+    this.initialFormData=this.todosForm.value;
   }
   // Function to create a FormGroup for a Todo
   createTodoGroup(todo?: Todo): FormGroup {
@@ -90,17 +95,24 @@ export class ListTodoComponent {
       categoryId: new FormControl(todo?.categoryId || 0, Validators.required)
     });
   }
-
-
-  // Function to cancel edit operation
-  onCancelChanges() {
-    this.isEditing = false;  
-    this.todosForm.reset(this.initialFormData);
-  }
+  addTodoRow() {
+    if(!this.addTodoGroup.invalid) {
+        const todoToAdd: Todo = {
+            id: this.addTodoGroup.get('id')?.value || 0,
+            title: this.addTodoGroup.get('title')?.value || '',
+            categoryId: this.addTodoGroup.get('categoryId')?.value || 0,
+        };
+        this.todoService.addTodo(todoToAdd);
+        this.addTodoGroup.reset();
+    }
+    this.initialFormData=this.todosForm.value;
+    this.hasChanges=false;
+} 
   onSaveAll() {
+    this.initialFormData=this.todosForm.value;
     const updatedTodos: Todo[] = this.todosForm.value.todos;
     this.todoService.updateAllTodos(updatedTodos);
-    this.isEditing = false;
+  
   }
   // Function to reset form changes
   resetChanges() {
@@ -110,11 +122,6 @@ export class ListTodoComponent {
   onDelete(index: number,id:number) {
     this.todos.removeAt(index);
     this.todoService.deleteTodo(id);
-  }
-  // Function to update the form
-  onUpdate() {
-    this.isEditing = true;  
-    this.initialFormData = this.todosForm.value;
   }
 }
 

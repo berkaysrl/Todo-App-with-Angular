@@ -39,7 +39,7 @@ export class TodoService {
     this.storageService.set('todos', updatedTodos);
   }
   // Adds a new todo to the list.
-  addTodo(todo: Todo): void {
+  addTodo(todo: Todo): Todo {
     todo.categoryId=todo.categoryId*1;
     const newTodo = {title:todo.title, categoryId:todo.categoryId, id: this.todoIdCounter++ };
     const currentTodos = this.todoSubject.value;
@@ -47,6 +47,7 @@ export class TodoService {
     this.todoSubject.next(updatedTodos);
     // Update the local storage with the new list.
     this.storageService.set('todos', updatedTodos);
+    return newTodo;
   }
   updateAllTodos(updatedTodos: Todo[]): void {
     this.todoSubject.next([...updatedTodos]);

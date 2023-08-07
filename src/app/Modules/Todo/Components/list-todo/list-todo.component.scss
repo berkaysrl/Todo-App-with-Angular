@@ -8,6 +8,14 @@
 .btn-warning {
     @include btn-warning;
 }
+.btn-primary {
+    @include btn-primary;
+}
+.inputTitle , .inputCategory
+{
+    width:40%;
+}
+
 .table
 {
     td,th{
