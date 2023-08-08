@@ -25,7 +25,6 @@ import { CategoryNamePipe } from 'src/app/Pipes/category-name.pipe';
 })
 export class ListTodoComponent {
   //Operation Controls on Pipe
-  filterChanged = false;
   shouldRebuildForm = true;
   // Observables to manage Todos and Categories data streams
   todos$ !:Observable<Todo[]>;
@@ -63,11 +62,11 @@ export class ListTodoComponent {
         this.searchControl.valueChanges.pipe(
           startWith(''),
           distinctUntilChanged(),
-          tap(() => this.filterChanged = true)
+          tap(() => this.shouldRebuildForm = true)
         ),
         this.categoryControl.valueChanges.pipe(
           startWith(''),
-          tap(() => this.filterChanged = true) 
+          tap(() => this.shouldRebuildForm = true) 
         )
     ]).pipe(
       map(([todos, searchTerm, category]) => {
@@ -85,9 +84,10 @@ export class ListTodoComponent {
       todos: new FormArray([])
     });
     this.filteredTodos$.subscribe(todos => {
-      if ((this.shouldRebuildForm || this.filterChanged)) {
+      if (this.shouldRebuildForm) {
           this.todos.clear();
           todos.forEach(todo => this.todos.push(this.createTodoGroup(todo)));
+          this.shouldRebuildForm=false;
       }
       this.initialFormData=this.todosForm.value;
       this.todosForm.reset(this.initialFormData);
@@ -105,13 +105,13 @@ export class ListTodoComponent {
     });
   }
   addTodoRow() {
-    this.shouldRebuildForm = false;
     if(!this.addTodoGroup.invalid) {
         const todoToAdd: Todo = {
             id: this.addTodoGroup.get('id')?.value || 0,
             title: this.addTodoGroup.get('title')?.value || '',
             categoryId: this.addTodoGroup.get('categoryId')?.value || 0,
         };
+        this.todos.push(this.createTodoGroup(todoToAdd));
         this.todoService.addTodo(todoToAdd);
         this.addTodoGroup.reset();
     }
@@ -119,7 +119,6 @@ export class ListTodoComponent {
   onSaveAll() {
     const changedTodos = this.getChangedTodos();
     if (changedTodos.length > 0) {
-      this.shouldRebuildForm = false;
       this.todoService.updateAllTodos(changedTodos);
       this.initialFormData = this.todosForm.value;
     }
