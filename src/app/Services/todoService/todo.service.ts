@@ -50,7 +50,15 @@ export class TodoService {
     return newTodo;
   }
   updateAllTodos(updatedTodos: Todo[]): void {
-    this.todoSubject.next([...updatedTodos]);
-    this.storageService.set('todos', updatedTodos);
+    const currentTodos = this.todoSubject.value;
+    updatedTodos.forEach(
+      todo=>
+      {
+        const index=currentTodos.findIndex(x=>x.id===todo.id);
+        currentTodos[index]=todo;
+      }
+    )
+    this.todoSubject.next(currentTodos);
+    this.storageService.set('todos', currentTodos);
   }
 }

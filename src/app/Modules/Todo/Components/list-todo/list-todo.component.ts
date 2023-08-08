@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Observable, combineLatest, distinctUntilChanged, map, startWith } from 'rxjs';
+import { Observable, combineLatest, distinctUntilChanged, map, startWith, tap } from 'rxjs';
 import { Category } from 'src/app/Interfaces/ICategory.interface';
 import { Todo } from 'src/app/Interfaces/ITodo.interface';
 import { CategoryService } from 'src/app/Services/categoryService/category.service';
@@ -24,6 +24,9 @@ import { CategoryNamePipe } from 'src/app/Pipes/category-name.pipe';
   styleUrls: ['./list-todo.component.scss']
 })
 export class ListTodoComponent {
+  //Operation Controls on Pipe
+  filterChanged = false;
+  shouldRebuildForm = true;
   // Observables to manage Todos and Categories data streams
   todos$ !:Observable<Todo[]>;
   categories$ !:Observable<Category[]>;
@@ -56,12 +59,16 @@ export class ListTodoComponent {
     this.categories$ = this.categoryService.getCategories();
     // Logic to filter Todos based on search and category selection
     this.filteredTodos$ = combineLatest([
-      this.todos$.pipe(),
-      this.searchControl.valueChanges.pipe(
-        startWith(''),
-        distinctUntilChanged(),
-      ),
-      this.categoryControl.valueChanges.pipe(startWith(''))
+        this.todos$.pipe(),
+        this.searchControl.valueChanges.pipe(
+          startWith(''),
+          distinctUntilChanged(),
+          tap(() => this.filterChanged = true)
+        ),
+        this.categoryControl.valueChanges.pipe(
+          startWith(''),
+          tap(() => this.filterChanged = true) 
+        )
     ]).pipe(
       map(([todos, searchTerm, category]) => {
         let filtered = todos;
@@ -78,14 +85,16 @@ export class ListTodoComponent {
       todos: new FormArray([])
     });
     this.filteredTodos$.subscribe(todos => {
-      this.todos.clear();
-      todos.forEach(todo => this.todos.push(this.createTodoGroup(todo)));
+      if ((this.shouldRebuildForm || this.filterChanged)) {
+          this.todos.clear();
+          todos.forEach(todo => this.todos.push(this.createTodoGroup(todo)));
+      }
       this.initialFormData=this.todosForm.value;
-    });
+      this.todosForm.reset(this.initialFormData);
+  });
     this.todosForm.valueChanges.subscribe(() => {
       this.hasChanges = JSON.stringify(this.initialFormData) !== JSON.stringify(this.todosForm.value);
     });
-    this.initialFormData=this.todosForm.value;
   }
   // Function to create a FormGroup for a Todo
   createTodoGroup(todo?: Todo): FormGroup {
@@ -96,6 +105,7 @@ export class ListTodoComponent {
     });
   }
   addTodoRow() {
+    this.shouldRebuildForm = false;
     if(!this.addTodoGroup.invalid) {
         const todoToAdd: Todo = {
             id: this.addTodoGroup.get('id')?.value || 0,
@@ -105,14 +115,24 @@ export class ListTodoComponent {
         this.todoService.addTodo(todoToAdd);
         this.addTodoGroup.reset();
     }
-    this.initialFormData=this.todosForm.value;
-    this.hasChanges=false;
 } 
   onSaveAll() {
-    this.initialFormData=this.todosForm.value;
-    const updatedTodos: Todo[] = this.todosForm.value.todos;
-    this.todoService.updateAllTodos(updatedTodos);
+    const changedTodos = this.getChangedTodos();
+    if (changedTodos.length > 0) {
+      this.shouldRebuildForm = false;
+      this.todoService.updateAllTodos(changedTodos);
+      this.initialFormData = this.todosForm.value;
+    }
+  }
+  getChangedTodos(): Todo[] {
+    const changedTodos: Todo[] = [];
   
+    this.todos.controls.forEach(control => {
+      if (control instanceof FormGroup && control.dirty) {
+        changedTodos.push(control.value);
+      }
+    });
+    return changedTodos;
   }
   // Function to reset form changes
   resetChanges() {

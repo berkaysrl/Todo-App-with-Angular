@@ -76,6 +76,7 @@ export class ListCategoriesComponent implements OnInit {
     const updatedCategories: Category[] = this.categoriesForm.value.categories;
     this.categoryService.updateAllCategories(updatedCategories);
     this.initialFormData=this.categoriesForm.value;
+    this.hasChanges=false;
   }
   // Function to delete a todo
   onDelete(index: number,id:number) {
