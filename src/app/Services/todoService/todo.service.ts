@@ -22,27 +22,31 @@ export class TodoService {
     const storedTodos = this.storageService.get('todos');
     if (storedTodos) {
       this.todoSubject.next(storedTodos);
-      // Set the next ID based on the last todo's ID or start from 1.
+      // Determine the next available ID based on the last todo's ID. If no todos are present, start from 1.
       this.todoIdCounter = storedTodos.length > 0 ? storedTodos[storedTodos.length - 1].id + 1 : 1;
     }
   }
+   
+  // Method to get the next available todo ID.
   public getTodoId():number
   {
     return this.todoIdCounter
   }
-  //Returns an observable of the current list of todos.
+
+  // Method to retrieve the current list of todos.
   public getTodos(): Observable<Todo[]> {
     return this.todos$;
   }
-  //Deletes a todo based on its ID.
+
+  // Method to delete a todo using its ID.
   deleteTodo(todoId: number): void {
     const currentTodos = this.todoSubject.value;
     const updatedTodos = currentTodos.filter(todo => todo.id !== todoId);
     this.todoSubject.next(updatedTodos);
-    // Update the local storage with the new list.
+    // After deletion, update the list in local storage.
     this.storageService.set('todos', updatedTodos);
   }
-  // Adds a new todo to the list.
+  // Method to add a new todo to the list.
   addTodo(todo: Todo): void {
     todo.categoryId=todo.categoryId*1;
     const newTodo = {title:todo.title, categoryId:todo.categoryId, id: this.todoIdCounter++ };
@@ -52,6 +56,8 @@ export class TodoService {
     // Update the local storage with the new list.
     this.storageService.set('todos', updatedTodos);
   }
+    
+  // Method to update multiple todos at once.
   updateAllTodos(updatedTodos: Todo[]): void {
     const currentTodos = this.todoSubject.value;
      updatedTodos.forEach(
@@ -63,16 +69,21 @@ export class TodoService {
         }
       }
     )
-   this.todoSubject.next(currentTodos);
+    this.todoSubject.next(currentTodos);
+    // Update the list in local storage.
     this.storageService.set('todos', currentTodos); 
   }
   
+  
+  // Method to filter todos based on search terms and category ID.
   filterTodos(searchTerm: string, categoryId?: number): Todo[] {
     const todos = this.todoSubject.value;
     let filtered = todos;
+    // If a search term is provided, filter todos by title.
     if (searchTerm && searchTerm.length > 0) {
       filtered = filtered.filter(todo => todo.title.includes(searchTerm));
     }
+    // If a category ID is provided, filter todos by category.
     if (categoryId) {
       filtered = filtered.filter(todo => todo.categoryId == categoryId);
     }

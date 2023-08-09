@@ -7,55 +7,66 @@ import { StorageService } from '../storageService/storage.service';
   providedIn: 'root' // This service will be provided at the root level, making it a singleton across the app
 })
 export class CategoryService {
- subscribe(arg0: (category: any) => void) {
-   throw new Error('Method not implemented.');
- }
- // BehaviorSubject that holds the current list of categories
- private categoriesSubject: BehaviorSubject<Category[]> = new BehaviorSubject<Category[]>([]);
- // Observable version of the BehaviorSubject
- private categories$ = this.categoriesSubject.asObservable();
- // Auto-incrementing ID value to be used when adding a new category
- private categoryIdCounter = 1;
+
+  // A BehaviorSubject to maintain the current list of categories.
+  private categoriesSubject: BehaviorSubject<Category[]> = new BehaviorSubject<Category[]>([]);
+  // An observable to allow other components to subscribe and get the list of categories.
+  private categories$ = this.categoriesSubject.asObservable();
+  // A counter for generating unique IDs for new categories.
+  private categoryIdCounter = 1;
+
  constructor(private storageService: StorageService) {
+    // Load the initial category data from local storage when the service is instantiated.
    this.loadInitialData();
  }
- // Function to load category data from storage at startup
+
+  // Method to load initial categories from local storage.
  private loadInitialData() {
    const storedCategories = this.storageService.get('categories');
    if (storedCategories) {
      this.categoriesSubject.next(storedCategories);
+     // Determine the next available ID based on the last category's ID or start from 1 if no categories are present.
      this.categoryIdCounter = storedCategories.length > 0 ? storedCategories[storedCategories.length - 1].id + 1 : 1;
    }
  }
+
+ // Method to get the next available category ID.
  public getCategoryId():number
  {
    return this.categoryIdCounter;
  }
- // Function that returns the list of categories
+
+// Method to retrieve the current list of categories.
  public getCategories(): Observable<Category[]> {
    return this.categories$;
- }
- // Function to add a new category
- addCategory(category: Category) {
+  }
+
+  // Method to add a new category.
+  addCategory(category: Category) {
   const newCategory = {name:category.name, id: this.categoryIdCounter++ };
   const currentCategories = this.categoriesSubject.value;
   const updatedCategories = [...currentCategories, newCategory];
   this.categoriesSubject.next(updatedCategories);
+  // Store the updated category list in local storage.
   this.storageService.set('categories', updatedCategories);
 }
- // Function to delete an existing category
- deleteCategory(categoryId: number): void {
+  // Method to delete a category by its ID.
+deleteCategory(categoryId: number): void {
    const currentCategories = this.categoriesSubject.value;
    const updatedCategories = currentCategories.filter(category => category.id !== categoryId);
    this.categoriesSubject.next(updatedCategories);
+    // Update the local storage with the new category list.
    this.storageService.set('categories', updatedCategories);
  }
- // Function to fetch category name by its ID
- getCategoryNameById(id: number): string {
+
+  // Method to get the name of a category by its ID.
+  getCategoryNameById(id: number): string {
    const currentCategories = this.categoriesSubject.value;
    const selectedCategory = currentCategories.find(category => category.id === id);
    return selectedCategory ? selectedCategory.name : 'Unknown Category';
  }
+
+  // Method to update multiple categories at once.
  updateAllCategories(updatedCategories: Category[]): void {
   const currentCategories = this.categoriesSubject.value;
   updatedCategories.forEach(
@@ -69,6 +80,7 @@ export class CategoryService {
    }
  )
 this.categoriesSubject.next(currentCategories);
- this.storageService.set('categories', currentCategories); 
+// Store the updated category list in local storage.
+this.storageService.set('categories', currentCategories); 
 }
 }
