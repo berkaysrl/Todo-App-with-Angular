@@ -1,37 +1,47 @@
+<!-- Form to Add a New Category -->
 <form [formGroup]="addCategoryGroup" class="mb-5" (submit)="addCategoryRow()">
   <div class="card-body ">
     <div class="d-flex flex-row justify-content-center align-items-center">
-      <!-- Category Name Input -->
+      <!-- Input field for Category Name -->
       <input type="text" class="form-control form-control-lg text-center mr-2" formControlName="name" placeholder="Add Category">
+      <!-- Button to add the category. It's disabled if the form is invalid. -->
       <div>
-        <!-- Add Category Button - Disabled if Form is Invalid -->
         <button type="submit" class="btn-primary" [disabled]="addCategoryGroup.invalid">Add</button>
       </div>
     </div>
   </div>
 </form>
+<!-- Container for Existing Categories and Operations -->
 <div class="container p-0">
+  <!-- Form for Displaying and Modifying Existing Categories -->
   <form [formGroup]="categoriesForm">
     <table class="table table-bordered">
+      <!-- Table Header Displaying Category Column Titles -->
       <thead>
         <tr>
           <th scope="col" *ngFor="let header of categoryTitles">{{header}}</th>
         </tr>
       </thead>
-    <tbody formArrayName="categories">
-      <tr *ngFor="let categoryCtrl of categories.controls; let i = index" [formGroupName]="i">
-        <td>
-          <input type="text" class="form-control text-center"  formControlName="name">
-        </td>
+      <!-- Table Body with Category Rows -->
+      <tbody formArrayName="categories">
+        <tr *ngFor="let categoryCtrl of categories.controls; let i = index" [formGroupName]="i">
+          <!-- Category Name Input Field for Each Row -->
+          <td>
+            <input type="text" class="form-control text-center" formControlName="name">
+          </td>
+          <!-- Button to Delete the Category in Current Row -->
           <td class="operationsColumn">
             <button class="btn btn-danger" (click)="onDelete(i,categoryCtrl.value['id'])">Delete</button>
           </td>
         </tr>
       </tbody>
     </table>
+    <!-- Save and Reset Changes Buttons -->
     <div class="mb-2">
-      <button class="btn btn-success"  [disabled]="!hasChanges " (click)="onSaveAll()">Save All</button>
-      <button class="btn btn-warning"   (click)="resetChanges()">Reset Changes</button>
-  </div>
+      <!-- Button to Save All Category Changes -->
+      <button class="btn btn-success" [disabled]="!hasChanges" (click)="onSaveAll()">Save All</button>
+      <!-- Button to Reset All Category Changes -->
+      <button class="btn btn-warning" (click)="resetChanges()">Reset Changes</button>
+    </div>
   </form>
 </div>

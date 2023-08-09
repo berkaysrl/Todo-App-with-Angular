@@ -1,17 +1,20 @@
 <!-- Filter Section for Todos -->
 <div class="filter-section">
+  <!-- Heading for the filter section -->
   <h3 class="text-center">
     Filter Todos
   </h3>
     <div class="card card-body mb-3">
         <div class="d-flex flex-row justify-content-between">
-          <!-- Search input control -->
+          <!-- Input control to search todos -->
           <input type="text" class="inputTitle form-control form-control-lg text-center mr-2" [formControl]="searchControl"  placeholder="Search">
-          <!-- Category selection for control -->
-          <select  class="inputCategory form-select form-select-lg text-center mr-2" [formControl]="categoryControl" placeholder="Select Category of Todo">
-            <option  value="" >All Categories</option>
-            <option  value="{{category.id}}" *ngFor="let category of categories$|async">{{category.name}}</option>
+          <!-- Dropdown control to select a category to filter todos -->
+          <select class="inputCategory form-select form-select-lg text-center mr-2" [formControl]="categoryControl" placeholder="Select Category of Todo">
+            <!-- Option to show todos from all categories -->
+            <option value="">All Categories</option>
+            <!-- Looping through categories to show them as options in the dropdown -->
+            <option value="{{category.id}}" *ngFor="let category of categories$|async">{{category.name}}</option>
           </select>
         </div>
     </div>
-  </div>
+</div>

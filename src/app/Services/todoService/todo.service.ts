@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, map } from 'rxjs';
 import { Todo } from 'src/app/Interfaces/ITodo.interface';
 import { StorageService } from '../storageService/storage.service';
 
@@ -26,6 +26,10 @@ export class TodoService {
       this.todoIdCounter = storedTodos.length > 0 ? storedTodos[storedTodos.length - 1].id + 1 : 1;
     }
   }
+  public getTodoId():number
+  {
+    return this.todoIdCounter
+  }
   //Returns an observable of the current list of todos.
   public getTodos(): Observable<Todo[]> {
     return this.todos$;
@@ -39,7 +43,7 @@ export class TodoService {
     this.storageService.set('todos', updatedTodos);
   }
   // Adds a new todo to the list.
-  addTodo(todo: Todo): Todo {
+  addTodo(todo: Todo): void {
     todo.categoryId=todo.categoryId*1;
     const newTodo = {title:todo.title, categoryId:todo.categoryId, id: this.todoIdCounter++ };
     const currentTodos = this.todoSubject.value;
@@ -47,18 +51,31 @@ export class TodoService {
     this.todoSubject.next(updatedTodos);
     // Update the local storage with the new list.
     this.storageService.set('todos', updatedTodos);
-    return newTodo;
   }
   updateAllTodos(updatedTodos: Todo[]): void {
     const currentTodos = this.todoSubject.value;
-    updatedTodos.forEach(
+     updatedTodos.forEach(
       todo=>
       {
         const index=currentTodos.findIndex(x=>x.id===todo.id);
-        currentTodos[index]=todo;
+        if (index !== -1) { 
+          currentTodos[index] = todo;
+        }
       }
     )
-    this.todoSubject.next(currentTodos);
-    this.storageService.set('todos', currentTodos);
+   this.todoSubject.next(currentTodos);
+    this.storageService.set('todos', currentTodos); 
+  }
+  
+  filterTodos(searchTerm: string, categoryId?: number): Todo[] {
+    const todos = this.todoSubject.value;
+    let filtered = todos;
+    if (searchTerm && searchTerm.length > 0) {
+      filtered = filtered.filter(todo => todo.title.includes(searchTerm));
+    }
+    if (categoryId) {
+      filtered = filtered.filter(todo => todo.categoryId == categoryId);
+    }
+    return filtered;
   }
 }

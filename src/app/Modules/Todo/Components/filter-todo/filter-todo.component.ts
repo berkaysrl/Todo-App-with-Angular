@@ -1,7 +1,9 @@
+// Importing necessary modules from Angular
 import { AsyncPipe, NgFor } from '@angular/common';
 import { Component, EventEmitter, OnDestroy, OnInit,Output } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Observable, Subject, debounceTime, takeUntil } from 'rxjs';
+// Importing custom interface and service
 import { Category } from 'src/app/Interfaces/ICategory.interface';
 import { CategoryService } from 'src/app/Services/categoryService/category.service';
 

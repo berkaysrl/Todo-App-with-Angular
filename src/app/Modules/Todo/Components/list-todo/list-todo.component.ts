@@ -1,7 +1,9 @@
+// Importing necessary modules from Angular
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Observable, combineLatest, distinctUntilChanged, map, startWith, tap } from 'rxjs';
+// Importing custom interface , service,pipe
 import { Category } from 'src/app/Interfaces/ICategory.interface';
 import { Todo } from 'src/app/Interfaces/ITodo.interface';
 import { CategoryService } from 'src/app/Services/categoryService/category.service';
@@ -39,7 +41,7 @@ export class ListTodoComponent {
   todosForm !: FormGroup;
   // We keep a form to return the value in cancel and reset state.
   initialFormData: any;
-  //We can see if there is a change from the comparison between this initial form and the real form and we keep as boolean variable it in this variable.
+  // Flag to determine if form has unsaved changes
   hasChanges: boolean = false;
   // Getter for 'todos' form array
   addTodoGroup=new FormGroup({
@@ -50,6 +52,7 @@ export class ListTodoComponent {
   get todos(): FormArray {
     return this.todosForm.get('todos') as FormArray;
   }
+  // Constructor to inject services
    constructor(public categoryService:CategoryService,private todoService:TodoService ) {
   }
   ngOnInit(): void {
@@ -70,14 +73,7 @@ export class ListTodoComponent {
         )
     ]).pipe(
       map(([todos, searchTerm, category]) => {
-        let filtered = todos;
-        if (searchTerm && searchTerm.length > 0) {
-          filtered = filtered.filter(todo => todo.title.includes(searchTerm));
-        }
-        if (category) {
-          filtered = filtered.filter(todo => todo.categoryId == category);
-        }
-        return filtered;
+        return this.todoService.filterTodos(searchTerm, category);
       })
     );
     this.todosForm = new FormGroup({
@@ -96,7 +92,7 @@ export class ListTodoComponent {
       this.hasChanges = JSON.stringify(this.initialFormData) !== JSON.stringify(this.todosForm.value);
     });
   }
-  // Function to create a FormGroup for a Todo
+  // Helper function to create a FormGroup for a todo
   createTodoGroup(todo?: Todo): FormGroup {
     return new FormGroup({
       id: new FormControl(todo?.id || null),
@@ -104,10 +100,12 @@ export class ListTodoComponent {
       categoryId: new FormControl(todo?.categoryId || 0, Validators.required)
     });
   }
+    // Add a new todo to the list
+
   addTodoRow() {
     if(!this.addTodoGroup.invalid) {
         const todoToAdd: Todo = {
-            id: this.addTodoGroup.get('id')?.value || 0,
+            id: this.todoService.getTodoId(),
             title: this.addTodoGroup.get('title')?.value || '',
             categoryId: this.addTodoGroup.get('categoryId')?.value || 0,
         };
@@ -115,17 +113,25 @@ export class ListTodoComponent {
         this.todoService.addTodo(todoToAdd);
         this.addTodoGroup.reset();
     }
-} 
+  } 
+   // Save all the changes made in the todos list
+  /*
+  When we change a value and revert it back, it becomes dirty. 
+  So, if the user modifies a value and makes it dirty,
+  when they click 'save all', that column gets updated again. 
+  However, instead of writing an n^n algorithm,
+    it seems more logical to me to have it work directly in o(n) manner.
+  */
+   // Save all the changes made in the todos list
   onSaveAll() {
     const changedTodos = this.getChangedTodos();
     if (changedTodos.length > 0) {
       this.todoService.updateAllTodos(changedTodos);
-      this.initialFormData = this.todosForm.value;
     }
   }
+  // Helper function to get todos that have been changed
   getChangedTodos(): Todo[] {
     const changedTodos: Todo[] = [];
-  
     this.todos.controls.forEach(control => {
       if (control instanceof FormGroup && control.dirty) {
         changedTodos.push(control.value);
@@ -133,7 +139,7 @@ export class ListTodoComponent {
     });
     return changedTodos;
   }
-  // Function to reset form changes
+  // Reset the form to its initial state
   resetChanges() {
     this.todosForm.reset(this.initialFormData);
   }
